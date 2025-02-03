@@ -23,6 +23,8 @@ def create_page(page):
             if "id" in response:
                 feedback.value = "Item created successfully!"
                 name_input.value, desc_input.value, price_input.value = "", "", ""
+                page.update()
+                page.go("/")
             else:
                 feedback.value = "Error creating item!"
         except Exception as ex:
