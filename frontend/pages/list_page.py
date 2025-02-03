@@ -1,28 +1,37 @@
 import flet as ft
+from flet import Page
 from utils.api import get_items, delete_item
 
-def list_page(page):
-    list_view = ft.ListView()
+def list_page(page:Page):
     selected_item_id = None  # Store item ID for deletion
-
+    page.horizontal_alignment='center'
+    page.padding=10
+    # page.vertical_alignment='center'
+    
     def load_items():
-        """Fetch and display items from the backend."""
+        """Fetch and display items from the backend in a tabular format."""
         items = get_items()
-        list_view.controls.clear()
+        data_table.rows.clear()
 
         for item in items:
             item_id = item["id"]
-            text = ft.Text(f"{item['name']} - ${item['price']}")
-
+            text_name = ft.Text(item['name'])
+            text_price = ft.Text(f"${item['price']}")
+            
             # Edit Button (Capturing correct item_id)
             edit_button = ft.ElevatedButton("Edit", on_click=lambda e, i=item_id: go_to_edit(i))
-
-            # Delete Button (Now captures item_id correctly)
+            
+            # Delete Button (Capturing correct item_id)
             delete_button = ft.ElevatedButton("Delete", on_click=lambda e, i=item_id: show_confirm_dialog(i))
-
-            row = ft.Row(controls=[text, edit_button, delete_button])
-            list_view.controls.append(row)
-
+            
+            row = ft.DataRow(cells=[
+                ft.DataCell(text_name),
+                ft.DataCell(text_price),
+                ft.DataCell(edit_button),
+                ft.DataCell(delete_button)
+            ])
+            data_table.rows.append(row)
+        
         page.update()
 
     def go_to_create(e):
@@ -72,9 +81,20 @@ def list_page(page):
     # Attach the dialog to the page
     page.dialog = confirm_dialog  
 
-    # Add buttons and list view
+    # Define DataTable
+    data_table = ft.DataTable(
+        columns=[
+            ft.DataColumn(ft.Text("Name")),
+            ft.DataColumn(ft.Text("Price")),
+            ft.DataColumn(ft.Text("Edit")),
+            ft.DataColumn(ft.Text("Delete")),
+        ],
+        rows=[]
+    )
+    
+    # Add buttons and data table
     create_button = ft.ElevatedButton("Create New Item", on_click=go_to_create)
-    page.controls.append(ft.Column(controls=[create_button, list_view]))
+    page.controls.append(ft.Column(controls=[create_button, data_table]))
     
     load_items()  # Automatically load items on page load
     page.update()
